@@ -73,6 +73,38 @@ No row is being deleted. Because:
 
 The catch is that row#1 is not re-evaluated after the first transaction commits. Consult the UPDATE / DELETE image if you can't wrap your head around this, and you'll realize that `T2` blocks only on #row2.
 
+### #P5 - Serialization anomaly
+
+This happens when it is not possible to serialize (= execute the one after the other) the 2 transactions and getting the results that each transaction had.
+
+Example:
+```
+T0> BEGIN;
+T0> SELECT count(*) FROM ints;
+ count
+-------
+     0
+(1 row)
+ 
+T1> BEGIN;
+T1> SELECT count(*) FROM ints;
+ count
+-------
+     0
+(1 ROW)
+ 
+T1> INSERT INTO ints SELECT 1;
+T1> COMMIT;
+ 
+T0> INSERT INTO ints SELECT 1;
+T0> COMMIT;
+```
+
+Both `T0` and `T1` see `count = 0`, but there is no way when run sequentially that they both saw `count = 0`, because they both insert rows. So, if `T0` runs first, `T1` should see `count = 1` and vice versa.
+
+Postgres does not complain (does not throw errors), but it can still create problems in your app.
+
+
 ## Solutions
 
 ### #S1 - Row level locks
@@ -99,6 +131,8 @@ Now the #P2 example is not longer an issue. Consider `P1` and `P2` being two app
 - P2.3. Save back to db (SET value = 3) and COMMIT
 
 Now the value will have the expected value of 3
+
+### #S2 - Different transaction isolation levels
 
 Sources and full credit to:
 
