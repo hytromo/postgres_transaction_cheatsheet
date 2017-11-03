@@ -90,16 +90,13 @@ Add `FOR UPDATE` after the `SELECT` statement. This will acquire a write lock in
 
 Now the #P2 example is not longer an issue. Consider `P1` and `P2` being two apps trying to access and increment a value in the same row:
 
-P1.1 Fetch row from db and read value (e.g. value == 1) with `FOR UPDATE`
-
-P2.1 Fetch row from db and read value with `FOR UPDATE` -> **blocks, because `FOR UPDATE` tries to acquire a write lock, while a write lock is present**
-
-P1.2. Increment the field (server side) (value++ -> value == 2)
-P1.3. Save back to db (SET value = 2) and COMMIT
-
-P2.1 -> **unblocks, because the write lock is released**, reads value == 2
-P1.2. Increment the field (server side) (value++ -> value == 3)
-P1.3. Save back to db (SET value = 3) and COMMIT
+- P1.1 Fetch row from db and read value (e.g. value == 1) with `FOR UPDATE`
+- P2.1 Fetch row from db and read value with `FOR UPDATE` -> **blocks, because `FOR UPDATE` tries to acquire a write lock, while a write lock is present**
+- P1.2. Increment the field (server side) (value++ -> value == 2)
+- P1.3. Save back to db (SET value = 2) and COMMIT
+- P2.1. -> **unblocks, because the write lock is released**, reads value == 2
+- P2.2. Increment the field (server side) (value++ -> value == 3)
+- P2.3. Save back to db (SET value = 3) and COMMIT
 
 Now the value will have the expected value of 3
 
