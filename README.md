@@ -102,8 +102,7 @@ T0> COMMIT;
 
 Both `T0` and `T1` see `count = 0`, but there is no way when run sequentially that they both saw `count = 0`, because they both insert rows. So, if `T0` runs first, `T1` should see `count = 1` and vice versa.
 
-Postgres does not complain (does not throw errors), but it can still create problems in your app.
-
+Postgres does not complain (does not throw errors (in the default isolation level)), but it can still create problems in your app.
 
 ## Solutions
 
@@ -133,11 +132,46 @@ Now the #P2 example is not longer an issue. Consider `P1` and `P2` being two app
 Now the value will have the expected value of 3
 
 ### #S2 - Different transaction isolation levels
+Can solve all the problems. Generally, while the isolation levels can solve #P1 and #P2, they do so in a less elegant way (aborting transactions), so **#P1 and #P2 should best be solved with row-level locks (#S1) and not with different isolation levels**.
+
+There are 3 different isolation levels:
+
+- Read committed (This is the default)
+- Repeatable read
+- Serializable
+
+#### #S2.a - Isolation level 'Repeatable read'
+Solves #P1, #P2, #P3 and #P4 (all apart from serialization anomaly)
+
+When the transaction starts, it takes a snapshot of the database. All the following queries within the transaction will use this snapshot to do their changes.
+
+*What does this means for the queries?*
+
+- SELECT: It "sees" only what is in the snapshot and nothing more. The select does not see any changes of every other transaction that commits after this transaction has begun.
+- UPDATE / DELETE: If they stumble upon a locked row, they wait for it to be commited / rolled back. **If the row gets commited by the other transaction, the snapshot is considered to be "out of date" and the current transaction aborts**. If the row gets rolled back by the other transaction, then the query continues as if nothing has happened.
+
+This means that **when someone uses 'Repeatable read', their code has to be prepared to retry transactions if any of them fail**.
+
+#P3 (Phantom read) is solved because the rows that the transaction sees are from the snapshot in the beginning of the transaction, so no more/less rows can be read due to other transactions.
+
+#P4 (Skipped modification) is solved by **aborting** all the transactions that wait for write lock in a row that is finally commited ("out of date" row).
+
+#### #S2.b - Isolation level 'Serializable'
+Can solve all the problems.
+
+This isolation level behaves exactly like 'Repeatable read', but it can also detect when two transactions cannot serialize correctly, and it will abort one of them to prevent a serialization anomaly.
+
+This means that **when someone uses 'Serializable', their code has to be prepared to retry transactions if any of them fail**.
+
+## Summary
+
+Solve #P1 - Non-repeatable reads -> use #S1.a, row level read lock (`FOR SHARE`)
+Solve #P2 - Lost update -> use #S1.b, row level write lock (`FOR UPDATE`)
+Solve #P3 - Phantom read and #P4 - Skipped modification -> use #S2.a, 'Repeatable read' isolation level (**RETRY TRANSACTION ON FAIL**)
+Solve #P5 - Serialization anomaly -> use #S2.b, 'Serializable' isolation level (**RETRY TRANSACTION ON FAIL**)
 
 Sources and full credit to:
 
-http://malisper.me/postgres-transactions-arent-fully-isolated/
-
-http://malisper.me/postgres-row-level-locks/
-
-http://malisper.me/postgres-transaction-isolation-levels/
+- http://malisper.me/postgres-transactions-arent-fully-isolated/
+- http://malisper.me/postgres-row-level-locks/
+- http://malisper.me/postgres-transaction-isolation-levels/
