@@ -140,6 +140,18 @@ There are 3 different isolation levels:
 - Repeatable read
 - Serializable
 
+To see the current isolation level:
+```
+SHOW default_transaction_isolation;
+```
+
+To set a different level:
+```
+SET default_transaction_isolation='serializable';
+```
+
+*Note*: The isolation level is different per connected client basis.
+
 #### #S2.a - Isolation level 'Repeatable read'
 Solves #P1, #P2, #P3 and #P4 (all apart from serialization anomaly)
 
