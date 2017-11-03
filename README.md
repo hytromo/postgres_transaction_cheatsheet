@@ -165,10 +165,10 @@ This means that **when someone uses 'Serializable', their code has to be prepare
 
 ## Summary
 
-Solve #P1 - Non-repeatable reads -> use #S1.a, row level read lock (`FOR SHARE`)
-Solve #P2 - Lost update -> use #S1.b, row level write lock (`FOR UPDATE`)
-Solve #P3 - Phantom read and #P4 - Skipped modification -> use #S2.a, 'Repeatable read' isolation level (**RETRY TRANSACTION ON FAIL**)
-Solve #P5 - Serialization anomaly -> use #S2.b, 'Serializable' isolation level (**RETRY TRANSACTION ON FAIL**)
+- Solve #P1 - Non-repeatable reads -> use #S1.a, row level read lock (`FOR SHARE`)
+- Solve #P2 - Lost update -> use #S1.b, row level write lock (`FOR UPDATE`)
+- Solve #P3 - Phantom read and #P4 - Skipped modification -> use #S2.a, 'Repeatable read' isolation level (**RETRY TRANSACTION ON FAIL**)
+- Solve #P5 - Serialization anomaly -> use #S2.b, 'Serializable' isolation level (**RETRY TRANSACTION ON FAIL**)
 
 Sources and full credit to:
 
