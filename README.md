@@ -131,6 +131,8 @@ Now the #P2 example is not longer an issue. Consider `P1` and `P2` being two app
 
 Now the value will have the expected value of 3
 
+*Note*: You can use `SKIP LOCKED` in order to add a virtual `WHERE locked = false` and skip the locked rows from being selected and you being blocked, if you don't want that.
+
 ### #S2 - Different transaction isolation levels
 Can solve all the problems. Generally, while the isolation levels can solve #P1 and #P2, they do so in a less elegant way (aborting transactions), so **#P1 and #P2 should best be solved with row-level locks (#S1) and not with different isolation levels**.
 
