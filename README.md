@@ -173,7 +173,7 @@ This means that **when someone uses 'Repeatable read', their code has to be prep
 #### #S2.b - Isolation level 'Serializable'
 Can solve all the problems.
 
-This isolation level behaves exactly like 'Repeatable read', but it can also detect when two transactions cannot serialize correctly, and it will abort one of them to prevent a serialization anomaly.
+This isolation level behaves exactly like 'Repeatable read', but it can also detect when two transactions cannot serialize correctly, and it will abort one of them to prevent a serialization anomaly. This comes with an overhead cost because Postgres now has an extra job - to detect the serialization anomalies.
 
 This means that **when someone uses 'Serializable', their code has to be prepared to retry transactions if any of them fail**.
 
