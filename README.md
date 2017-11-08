@@ -159,7 +159,7 @@ Solves #P1, #P2, #P3 and #P4 (all apart from serialization anomaly)
 
 When the transaction starts, it takes a snapshot of the database. All the following queries within the transaction will use this snapshot to do their changes.
 
-*What does this means for the queries?*
+*What does this mean for the queries?*
 
 - SELECT: It "sees" only what is in the snapshot and nothing more. The select does not see any changes of every other transaction that commits after this transaction has begun.
 - UPDATE / DELETE: If they stumble upon a locked row, they wait for it to be commited / rolled back. **If the row gets commited by the other transaction, the snapshot is considered to be "out of date" and the current transaction aborts**. If the row gets rolled back by the other transaction, then the query continues as if nothing has happened.
